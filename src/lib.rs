@@ -385,6 +385,12 @@ impl<I2C: ehal::i2c::I2c> BMP388<I2C, Blocking> {
         Ok(Status::from_reg(status))
     }
 
+    /// Get interrupt status. Also clears the interrupt!
+    pub fn int_status(&mut self) -> Result<IntStatus, I2C::Error> {
+        let int_status = self.read_byte(Register::int_status)?;
+        Ok(IntStatus::from_reg(int_status))
+    }
+
     ///Get the error register
     pub fn error(&mut self) -> Result<Error, I2C::Error> {
         let error = self.read_byte(Register::err)?;
@@ -448,6 +454,28 @@ impl Status {
             command_ready: value & (1 << 4) != 0,
             pressure_data_ready: value & (1 << 5) != 0,
             temperature_data_ready: value & (1 << 6) != 0,
+        }
+    }
+}
+
+/// Interrupt status
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+pub struct IntStatus {
+    /// Fifo Watermark Interrupt
+    pub fifo_wm: bool,
+    /// Fifo Full Interrupt
+    pub fifo_full: bool,
+    /// Data Ready Interrupt
+    pub data_ready: bool,
+}
+
+impl IntStatus {
+    /// Creates the IntStatus from a register value
+    pub(crate) fn from_reg(value: u8) -> Self {
+        Self {
+            fifo_wm: value & (1 << 0) != 0,
+            fifo_full: value & (1 << 1) != 0,
+            data_ready: value & (1 << 3) != 0,
         }
     }
 }

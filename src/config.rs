@@ -17,6 +17,7 @@ pub(crate) enum Register {
     calib00 = 0x31,
     cmd = 0x7E,
     status = 0x03,
+    int_status = 0x11,
     err = 0x02,
 }
 
